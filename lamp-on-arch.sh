@@ -1,19 +1,11 @@
 #!/bin/bash
 
 # Author: Henry
-# Date: 27/01/2022
+# Created on: 27/01/2022
 #
-# Description: LAMP stack setup on Arch linux.
+# Description: LAMP server setup on Arch linux.
 #
 
-# Install packages
-# Configure apache
-# Configure PHP
-# Configure apache directory load to php
-# Configure Mysql
-# Configure Mysql_secure_installation
-# Setup Adminer
-# Setup Adminer theme (dracula)
 
 function title(){
     echo -e "\n\tLAMP server Installer for Arch Linux\n"
@@ -54,21 +46,20 @@ function configure_apache(){
 
     systemctl start httpd
 
-    echo -e "-> Disabling User Directories\n"
-    sed -i  's\Include conf/extra/httpd-userdir.conf\# Include conf/extra/httpd-userdir.conf\' /etc/httpd/conf/httpd.conf && echo -e "-> Disabled successfully\n"
+    # Deleting the inclusion of User Directories
+    echo -e "-> Deleting User Directories entry in httpd config\n"
+    sed -i  '\Include conf/extra/httpd-userdir.conf\d' /etc/httpd/conf/httpd.conf && echo -e "-> Disabled successfully\n"
 
+    # Adding support for PHP
     echo -e "-> Enabling support for php in apache\n"
     echo "" >> /etc/httpd/conf/httpd.conf
     echo "LoadModule php_module modules/libphp.so" >> /etc/httpd/conf/httpd.conf
     echo "AddHandler php-script .php" >> /etc/httpd/conf/httpd.conf
+    echo "" >> /etc/httpd/conf/httpd.conf
+    echo "# Support for PHP" >> /etc/httpd/conf/httpd.conf
     echo "Include conf/extra/php_module.conf" >> /etc/httpd/conf/httpd.conf
 
-#     echo -e "-> Creating public_html in your home folder $HOME\n"
-#     mkdir ~/public_html
-#     chmod o+x ~/public_html
-#     chmod -R o+r ~/public_html
-
-    # Change in php.ini
+    # Adding custom settings to php.ini
     echo -e "==> Modifying php.ini\n"
     sleep 1
     echo -e "=> Disabling mpm_event_module\n"
@@ -84,6 +75,8 @@ function configure_apache(){
     sed -i  's/;extension=mysqli/extension=mysqli/' /etc/php/php.ini
     sed -i  's/;extension=pdo_mysql/extension=pdo_mysql/' /etc/php/php.ini
     sleep 1
+
+    # Adding support for phpMyAdmin
     echo -e "=> Creating phpmyadmin configuration\n"
     touch /etc/httpd/conf/extra/phpmyadmin.conf
 echo "
@@ -94,39 +87,58 @@ Alias /phpmyadmin "/usr/share/webapps/phpMyAdmin"
     Options FollowSymlinks
     Require all granted
 </Directory> " > /etc/httpd/conf/extra/phpmyadmin.conf
-
-    echo -e "=> phpMyAdmin config modified\n"
+    echo -e "=> phpMyAdmin config modified successfully\n"
     sleep 1
-    echo "-> phpMyAdmin included in apache config"
+    echo -e "-> phpMyAdmin included in httpd config\n"
     echo "" >> /etc/httpd/conf/httpd.conf
+    echo "# support for phpMyAdmin" >> /etc/httpd/conf/httpd.conf
     echo "Include conf/extra/phpmyadmin.conf" >> /etc/httpd/conf/httpd.conf
 
+    # Adding support for Adminer
+    echo -e "-> Installing Adminer\n"
+    pacman -U adminer-4.8.1-1-any.pkg.tar.zst
+    echo -e "-> Adminer included in httpd config\n"
+    echo "" >> /etc/httpd/conf/httpd.conf
+    echo "# support for Adminer" >> /etc/httpd/conf/httpd.conf
+    echo "Include conf/extra/httpd-adminer.conf" >> /etc/httpd/conf/httpd.conf
+    echo -e "-> Adding dracula theme to Adminer"
+    cd /usr/share/webapps/adminer/
+    wget https://raw.githubusercontent.com/vrana/adminer/master/designs/dracula/adminer.css
+    echo -e "Theme added! \n"
+    cd ~
+
+    # Enabling cookie support in phpMyAdmin
     echo "-> Enabling cookie based authentication in phpMyAdmin config\n"
     sleep 1
     sed -i  's/$cfg['blowfish_secret'] = '';/$cfg['blowfish_secret'] = ‘{^QP+-(3mlHy+Gd~FE3mN{gIATs^1lX+T=KVYv{ubK*U0V’ ;/' /etc/webapps/phpmyadmin/config.inc.php
     sleep 1
 
+    # saving changes and restarting the service
     echo -e "=> Restarting apache to apply the changes made before.\n"
     systemctl restart httpd
     echo -e "-> Restarted successfully\n"
-
 }
 
 function configure_mysql(){
 
+    # Installing mysql base
     echo -e "==> Setting up mysql\n"
     echo -e "-> Installing mysql in your system\n"
     mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+
+    # Starting mysql service
     echo -e "-> Starting mysql now\n"
     systemctl start mysqld
+
+    # Setting up mysql_secure_installation
     echo -e "-> Setting up mysql secure installtion\n"
     mysql_secure_installation
 
+    # Create user if yes
     read -p "-> If you want to create new user in mysql database [y/n]" opt
-
     case $opt in
         y | Y)
-            Create a new database and granting privileges to user
+            echo -e "=> Create a new database and granting privileges to user\n"
             read -p "-> Enter Username: " $username
             read -p -s "-> Enter Password: " $userpass
             read -p "-> Enter database name: " $dbname
@@ -162,8 +174,6 @@ function lamp_setup(){
         ;;
     esac
 }
-
-# function configure_adminer(){}
 
 ## Call functions
 
