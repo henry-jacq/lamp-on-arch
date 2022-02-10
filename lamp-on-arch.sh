@@ -30,7 +30,7 @@ function install_pkgs(){
     pacman -Syy
 
 #     pkgs=(apache php php-apache php-cgi php-mcrypt php-gd php-pgsql php-imagick mariadb mariadb-clients phpmyadmin) # adminer
-    pkgs="apache php php-apache php-cgi php-mcrypt php-gd php-pgsql php-imagick mariadb mariadb-clients phpmyadmin" # adminer
+    pkgs="apache php php-apache php-cgi php-gd php-pgsql php-imagick mariadb mariadb-clients phpmyadmin" # adminer
 
 #     for $i in ${pkgs[@]}; do
 #         echo -e "-> [*] Installing $i"
@@ -101,14 +101,14 @@ Alias /phpmyadmin "/usr/share/webapps/phpMyAdmin"
     echo "" >> /etc/httpd/conf/httpd.conf
     echo "# support for Adminer" >> /etc/httpd/conf/httpd.conf
     echo "Include conf/extra/httpd-adminer.conf" >> /etc/httpd/conf/httpd.conf
-    echo -e "-> Adding dracula theme to Adminer"
+    echo -e "-> Adding dracula theme to Adminer\n"
     cd /usr/share/webapps/adminer/
     wget https://raw.githubusercontent.com/vrana/adminer/master/designs/dracula/adminer.css
-    echo -e "Theme added! \n"
+    echo -e "=> Theme added! \n"
     cd ~
 
     # Enabling cookie support in phpMyAdmin
-    echo "-> Enabling cookie based authentication in phpMyAdmin config\n"
+    echo -e"-> Enabling cookie based authentication in phpMyAdmin config\n"
     sleep 1
     sed -i  's/$cfg['blowfish_secret'] = '';/$cfg['blowfish_secret'] = ‘{^QP+-(3mlHy+Gd~FE3mN{gIATs^1lX+T=KVYv{ubK*U0V’ ;/' /etc/webapps/phpmyadmin/config.inc.php
     sleep 1
