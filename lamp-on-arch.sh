@@ -1,15 +1,10 @@
 #!/bin/bash
 
-# Author: Henry
+# Maintainer: Henry
 # Created on: 27/01/2022
 #
 # Description: LAMP server setup on Arch linux.
 #
-
-
-function title(){
-    echo -e "\n\tLAMP server Installer for Arch Linux\n"
-}
 
 function check_root(){
     clear
