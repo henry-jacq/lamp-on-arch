@@ -9,12 +9,10 @@
 function check_root(){
     clear
     if [[ $UID != 0 ]]; then
-        title
         echo "-> Run as root"
         echo -e "-> Usage: sudo $0\n"
         exit
     else
-        title
         echo -e "==> Starting lamp server installation\n"
     fi
 }
@@ -91,7 +89,7 @@ Alias /phpmyadmin "/usr/share/webapps/phpMyAdmin"
 
     # Adding support for Adminer
     echo -e "-> Installing Adminer\n"
-    pacman -U adminer-4.8.1-1-any.pkg.tar.zst
+    pacman -U adminer-4.8.1-1-any.pkg.tar.zst --noconfirm
     echo -e "-> Adminer included in httpd config\n"
     echo "" >> /etc/httpd/conf/httpd.conf
     echo "# support for Adminer" >> /etc/httpd/conf/httpd.conf
@@ -103,7 +101,7 @@ Alias /phpmyadmin "/usr/share/webapps/phpMyAdmin"
     cd ~
 
     # Enabling cookie support in phpMyAdmin
-    echo -e"-> Enabling cookie based authentication in phpMyAdmin config\n"
+    echo -e "-> Enabling cookie based authentication in phpMyAdmin config\n"
     sleep 1
     sed -i  's/$cfg['blowfish_secret'] = '';/$cfg['blowfish_secret'] = ‘{^QP+-(3mlHy+Gd~FE3mN{gIATs^1lX+T=KVYv{ubK*U0V’ ;/' /etc/webapps/phpmyadmin/config.inc.php
     sleep 1
